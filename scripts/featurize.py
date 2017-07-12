@@ -6,9 +6,9 @@ from tqdm import tqdm
 from rdkit import Chem
 from rdkit.Chem import MACCSkeys
 
-from utils.utils import (ohe_label,
-						 PAD_ID,
-						 remove_salts)
+from utils import (ohe_label,
+				   PAD_ID,
+				   remove_salts)
 
 max_char_len = 100
 min_char_len = 20

@@ -63,3 +63,45 @@ def remove_salts(smiles):
         return longest_frag
     else:
         return smiles
+
+class DataSet(object):
+	def __init__(self, file_path, valid_size=0.2):
+		self.file_path = file_path
+		self.npzfile = np.load(self.file_path)
+		self.files = self.npzfile.files
+		self.samples = self.npzfile['samples']
+		self.labels = self.npzfile['labels']
+		assert self.samples.shape[0] == self.labels.shape[0], "Number of samples and labels are not equal"
+		self.set_size = self.samples.shape[0]
+		total_indices = list(range(self.set_size))
+		random.shuffle(total_indices)
+		valid_partition = math.floor(self.set_size*valid_size)
+		train_indices = total_indices[:-valid_partition]
+		valid_indicies = total_indices[-valid_partition:]
+		self.train_samples = self.samples[train_indices]
+		self.train_labels = self.labels[train_indices]
+		self.valid_samples = self.samples[valid_indicies]
+		self.valid_labels = self.labels[valid_indicies]
+
+	@property
+	def samples_shape(self):
+	    return self.samples.shape
+	
+	@property
+	def labels_shape(self):
+	    return self.labels.shape
+	
+	def get_batch(self, batch_size, batch_type):
+		assert batch_type in ('train','valid'), "Unrecognized batch_type %s" % batch_type
+
+		def batch_helper(samples, labels):
+			indices = np.random.randint(0, samples.shape[0], batch_size)
+			samples_batch = samples[indices]
+			labels_batch = labels[indices]
+			return (samples_batch, labels_batch)
+
+		if batch_type == 'train':
+			samples_batch, labels_batch = batch_helper(self.train_samples, self.train_labels)
+		else:
+			samples_batch, labels_batch = batch_helper(self.valid_samples, self.valid_labels)
+		return (samples_batch, labels_batch)
